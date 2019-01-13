@@ -11,6 +11,7 @@ using bits64 = std::bitset<64>;
 hash_algorithm::digest_t hash_algorithm::get_digest(void) {
   digest_t digest;
   std::byte padding[BLOCK_SIZE_BYTES];
+  std::uint64_t len_bits = _len_data_hashed << 3;
 
   std::memset(padding, 0, BLOCK_SIZE_BYTES);
   padding[0] = std::byte(0x80);
@@ -21,15 +22,14 @@ hash_algorithm::digest_t hash_algorithm::get_digest(void) {
     pad_len += BLOCK_SIZE_BYTES;
   _hash_data(padding, pad_len);
 
-  std::uint64_t len = _len_data_hashed << 3;
-  padding[0] = std::byte(len >> 56);
-  padding[1] = std::byte(len >> 48);
-  padding[2] = std::byte(len >> 40);
-  padding[3] = std::byte(len >> 32);
-  padding[4] = std::byte(len >> 24);
-  padding[5] = std::byte(len >> 16);
-  padding[6] = std::byte(len >> 8);
-  padding[7] = std::byte(len);
+  padding[0] = std::byte(len_bits >> 56);
+  padding[1] = std::byte(len_bits >> 48);
+  padding[2] = std::byte(len_bits >> 40);
+  padding[3] = std::byte(len_bits >> 32);
+  padding[4] = std::byte(len_bits >> 24);
+  padding[5] = std::byte(len_bits >> 16);
+  padding[6] = std::byte(len_bits >> 8);
+  padding[7] = std::byte(len_bits);
 
   _hash_data(padding, 8);
 
