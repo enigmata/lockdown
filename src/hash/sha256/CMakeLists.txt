@@ -38,3 +38,18 @@ add_test(NAME string_abcdefghi
 add_test(NAME string_abcdefghij
          COMMAND sha256_test 11
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha256)
+add_test(NAME string_paul_glick_quote
+         COMMAND sha256_test 12
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha256)
+add_test(NAME string_random_63_chars
+         COMMAND sha256_test 13
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha256)
+add_test(NAME string_random_64_chars
+         COMMAND sha256_test 14
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha256)
+add_test(NAME string_random_65_chars
+         COMMAND sha256_test 15
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha256)
+add_test(NAME string_random_111_chars
+         COMMAND sha256_test 16
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha256)
