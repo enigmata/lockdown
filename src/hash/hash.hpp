@@ -21,6 +21,8 @@ public:
     return *this;
   };
 
+  digest_t get_digest() { return _algorithm.get_digest(); }
+
   void reset() { _algorithm.reset(); };
 
 private:
