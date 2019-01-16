@@ -1,3 +1,6 @@
+path_classifiers:
+  test:
+    "**/*_test.cpp"
 extraction:
   cpp:
     prepare:
