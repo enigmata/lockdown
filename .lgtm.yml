@@ -1,0 +1,14 @@
+extraction:
+  cpp:
+    prepare:
+      packages:
+        - g++-8
+    after_prepare:
+      - mkdir -p $LGTM_WORKSPACE/gcc
+      - ln -s /usr/bin/g++-8 $LGTM_WORKSPACE/gcc/g++
+      - ln -s /usr/bin/gcc-8 $LGTM_WORKSPACE/gcc/gcc
+      - mkdir $LGTM_WORKSPACE/tmp
+      - wget https://cmake.org/files/v3.13/cmake-3.13.3-Linux-x86_64.tar.gz -O $LGTM_WORKSPACE/tmp/cmake.tgz
+      - mkdir $LGTM_WORKSPACE/cmake
+      - tar -C $LGTM_WORKSPACE/cmake -zxvf $LGTM_WORKSPACE/tmp/cmake.tgz
+      - export PATH=$LGTM_WORKSPACE/gcc:$LGTM_WORKSPACE/cmake/cmake-3.13.3-Linux-x86_64/bin:$PATH
