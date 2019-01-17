@@ -6,6 +6,10 @@
 #include <cstdint>
 #include <string_view>
 
+namespace crypto::sha224 {
+class hash_algorithm;
+}
+
 namespace crypto::sha256 {
 
 const std::size_t BLOCK_SIZE_BYTES = 64;
@@ -21,7 +25,7 @@ class hash_algorithm {
 public:
   static const std::size_t digest_size_bytes = DIGEST_SIZE_BYTES;
 
-  using digest_t = std::array<std::byte, digest_size_bytes>;
+  using digest_t = std::array<std::byte, DIGEST_SIZE_BYTES>;
 
   hash_algorithm(void) { reset(); };
 
@@ -31,7 +35,7 @@ public:
                  str.length() * sizeof(std::string_view::value_type));
   };
 
-  digest_t get_digest(void);
+  digest_t get_digest(void) { return _get_digest(); };
 
   void reset(void) {
     _digest_wip = DIGEST_INITIAL_VALS;
@@ -39,8 +43,11 @@ public:
   };
 
 private:
+  friend crypto::sha224::hash_algorithm;
+
   void _hash_blocks(std::byte *, std::size_t);
   void _hash_data(std::byte *, std::size_t);
+  digest_t _get_digest(void);
 
   std::array<std::byte, UNDERFLOW_MAXSIZE_BYTES> _underflow;
   std::array<std::uint32_t, DIGEST_SIZE_UINT32> _digest_wip;

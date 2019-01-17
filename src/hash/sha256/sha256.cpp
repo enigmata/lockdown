@@ -8,7 +8,7 @@ namespace crypto::sha256 {
 
 using bits64 = std::bitset<64>;
 
-hash_algorithm::digest_t hash_algorithm::get_digest(void) {
+hash_algorithm::digest_t hash_algorithm::_get_digest(void) {
   digest_t digest;
   std::byte padding[BLOCK_SIZE_BYTES];
   std::uint64_t len_bits = _len_data_hashed << 3;
