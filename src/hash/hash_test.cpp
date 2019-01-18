@@ -1,22 +1,26 @@
+#include <algorithm>
 #include <cstdio>
 #include <variant>
+#include <vector>
 
 #include "hash.hpp"
+#include "sha224/sha224.hpp"
 #include "sha256/sha256.hpp"
 
 using namespace crypto;
 using B = std::byte;
-using hash_algorithms_t = std::variant<hash<sha256::hash_algorithm>>;
+using hash_algorithms_t =
+    std::variant<hash<sha256::hash_algorithm>, hash<sha224::hash_algorithm>>;
 
 struct testcase_t {
   hash_algorithms_t hash_algorithm;
   std::string_view string;
-  sha256::hash_algorithm::digest_t digest;
+  std::vector<std::byte> digest;
 };
 
 hash<sha256::hash_algorithm> sha256_hash;
 
-std::array<testcase_t, 4> testcases{
+std::array<testcase_t, 7> testcases{
     {{hash<sha256::hash_algorithm>(),
       "",
       {B{0xe3}, B{0xb0}, B{0xc4}, B{0x42}, B{0x98}, B{0xfc}, B{0x1c}, B{0x14},
@@ -38,11 +42,28 @@ std::array<testcase_t, 4> testcases{
      {hash<sha256::hash_algorithm>(),
       "SHe9a6$evjFzdyowF#hzzMmlZwRbclm2!!4oy5j7IdALLY06Abl9VyRjR7H*^"
       "RRlZ0PjgIJQ9sAC_-KoB10YqYjx3HcqvUWF%$@nax8OrRj5KPJ",
-      {B{0xaa}, B{0x48}, B{0xc0}, B{0xbb}, B{0x3a}, B{0x04}, B{0xfb},
-       B{0x7d}, B{0xa9}, B{0xc6}, B{0x3c}, B{0x6a}, B{0x81}, B{0x05},
-       B{0x3b}, B{0xe2}, B{0x25}, B{0x26}, B{0xa6}, B{0xc1}, B{0x2c},
-       B{0xd7}, B{0xf4}, B{0x92}, B{0x97}, B{0xa9}, B{0x47}, B{0x45},
-       B{0xfe}, B{0x29}, B{0xc3}, B{0x34}}}}};
+      {B{0xaa}, B{0x48}, B{0xc0}, B{0xbb}, B{0x3a}, B{0x04}, B{0xfb}, B{0x7d},
+       B{0xa9}, B{0xc6}, B{0x3c}, B{0x6a}, B{0x81}, B{0x05}, B{0x3b}, B{0xe2},
+       B{0x25}, B{0x26}, B{0xa6}, B{0xc1}, B{0x2c}, B{0xd7}, B{0xf4}, B{0x92},
+       B{0x97}, B{0xa9}, B{0x47}, B{0x45}, B{0xfe}, B{0x29}, B{0xc3}, B{0x34}}},
+     {hash<sha224::hash_algorithm>(),
+      "abcdefghij",
+      {B{0xd3}, B{0x5e}, B{0x1e}, B{0x5a}, B{0xf2}, B{0x9d}, B{0xdb},
+       B{0x0d}, B{0x7e}, B{0x15}, B{0x43}, B{0x57}, B{0xdf}, B{0x4a},
+       B{0xd9}, B{0x84}, B{0x2a}, B{0xfe}, B{0xe5}, B{0x27}, B{0xc6},
+       B{0x89}, B{0xee}, B{0x54}, B{0x7f}, B{0x75}, B{0x31}, B{0x88}}},
+     {hash<sha224::hash_algorithm>(),
+      "How can you write a big system without C++?  -Paul Glick",
+      {B{0x86}, B{0xed}, B{0x2e}, B{0xaa}, B{0x9c}, B{0x75}, B{0xba},
+       B{0x98}, B{0x39}, B{0x6e}, B{0x5c}, B{0x9f}, B{0xb2}, B{0xf6},
+       B{0x79}, B{0xec}, B{0xf0}, B{0xea}, B{0x2e}, B{0xd1}, B{0xe0},
+       B{0xee}, B{0x9c}, B{0xee}, B{0xcb}, B{0x4a}, B{0x93}, B{0x32}}},
+     {hash<sha224::hash_algorithm>(),
+      "6RT5wsQLCmYRFUn1kkoRV4tc9PEbq3o6hLz4NWlJymG5D9MJ12dUR7FwoPi07a2",
+      {B{0x6e}, B{0xa7}, B{0xb2}, B{0xc4}, B{0xac}, B{0xec}, B{0xb2},
+       B{0xd3}, B{0x7b}, B{0x16}, B{0x07}, B{0xa8}, B{0x16}, B{0xd6},
+       B{0x67}, B{0x1a}, B{0xd2}, B{0x70}, B{0xa5}, B{0x7e}, B{0xfb},
+       B{0x62}, B{0x17}, B{0xf9}, B{0xd9}, B{0xe1}, B{0x22}, B{0x47}}}}};
 
 int main(int argc, char *argv[]) {
   int rc = 0;
@@ -72,7 +93,8 @@ int main(int argc, char *argv[]) {
           algorithm << tc.string;
 
           std::printf("%04lu: ", tcnum + 1);
-          if (tc.digest == algorithm.get_digest()) {
+          auto digest = algorithm.get_digest();
+          if (std::equal(tc.digest.begin(), tc.digest.end(), digest.begin())) {
             std::printf("passed");
           } else {
             std::printf("failed");
