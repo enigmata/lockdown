@@ -18,8 +18,6 @@ struct testcase_t {
   std::vector<std::byte> digest;
 };
 
-hash<sha256::hash_algorithm> sha256_hash;
-
 std::array<testcase_t, 7> testcases{
     {{hash<sha256::hash_algorithm>(),
       "",
