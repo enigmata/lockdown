@@ -1,11 +1,377 @@
 #ifndef __SHA_HPP__
 #define __SHA_HPP__ 1
 
+#include <bitset>
+#include <cassert>
 #include <cstdint>
 #include <cstring>
 #include <tuple>
 
+#include "sha_constants.hpp"
+
 namespace crypto::sha {
+
+template <typename uint_t, std::size_t digest_size, std::size_t block_size>
+class algorithm {
+public:
+  using digest_t = std::array<std::byte, digest_size>;
+
+  algorithm() { reset(); };
+
+  std::size_t get_digest_size() const { return digest_size; };
+
+  void hash_data(std::byte *data_ptr, std::size_t data_len);
+
+  digest_t get_digest(void);
+
+  void reset(void) {
+    _digest_wip = get_digest_init_vals<uint_t, digest_size, block_size>();
+    _len_data_hashed = _len_underflow = 0;
+  };
+
+private:
+  const std::size_t BLOCK_SIZE_BYTES = block_size;
+  const std::size_t UNDERFLOW_MAXSIZE_BYTES = block_size;
+
+  std::array<std::byte, block_size> _underflow;
+  std::array<uint_t, DIGEST_SIZE_UINT> _digest_wip;
+  const std::size_t DIGEST_SIZE_BYTES = digest_size;
+  std::uint64_t _len_data_hashed;
+  std::size_t _len_underflow;
+
+  void _hash_blocks(std::byte *data_ptr, std::size_t data_len);
+};
+
+using sha256_hash =
+    algorithm<std::uint32_t, SHA256_DIGEST_SIZE, SHA256FAMILY_BLOCK_SIZE>;
+using sha256_224_hash =
+    algorithm<std::uint32_t, SHA224_DIGEST_SIZE, SHA256FAMILY_BLOCK_SIZE>;
+
+template <typename uint_t, std::size_t digest_size, std::size_t block_size>
+std::array<std::byte, digest_size>
+algorithm<uint_t, digest_size, block_size>::get_digest(void) {
+  digest_t digest;
+  std::byte padding[BLOCK_SIZE_BYTES];
+  std::uint64_t len_bits = _len_data_hashed << 3;
+
+  std::memset(padding, 0, BLOCK_SIZE_BYTES);
+  padding[0] = std::byte(0x80);
+
+  std::int32_t pad_len = 56 - (_len_data_hashed % BLOCK_SIZE_BYTES);
+
+  if (pad_len <= 0)
+    pad_len += BLOCK_SIZE_BYTES;
+  hash_data(padding, pad_len);
+
+  padding[0] = std::byte(len_bits >> 56);
+  padding[1] = std::byte(len_bits >> 48);
+  padding[2] = std::byte(len_bits >> 40);
+  padding[3] = std::byte(len_bits >> 32);
+  padding[4] = std::byte(len_bits >> 24);
+  padding[5] = std::byte(len_bits >> 16);
+  padding[6] = std::byte(len_bits >> 8);
+  padding[7] = std::byte(len_bits);
+
+  hash_data(padding, 8);
+
+  assert(_len_underflow == 0);
+
+  std::size_t byte_offset = 0;
+
+  for (uint_t hash_uint : _digest_wip) {
+    digest[byte_offset] = std::byte(hash_uint >> 24);
+    digest[++byte_offset] = std::byte(hash_uint >> 16);
+    digest[++byte_offset] = std::byte(hash_uint >> 8);
+    digest[++byte_offset] = std::byte(hash_uint);
+    byte_offset += 1;
+  }
+  return digest;
+};
+
+template <typename uint_t, std::size_t digest_size, std::size_t block_size>
+void algorithm<uint_t, digest_size, block_size>::hash_data(
+    std::byte *data_ptr, std::size_t data_len) {
+
+  if (data_len == 0 || data_ptr == nullptr)
+    return;
+
+  using bits64 = std::bitset<64>;
+
+  std::size_t bytes_processed = 0;
+
+  _len_data_hashed += data_len;
+
+  if (_len_underflow > 0) {
+    std::size_t underflow_capacity = UNDERFLOW_MAXSIZE_BYTES - _len_underflow;
+    bytes_processed =
+        (data_len >= underflow_capacity) ? underflow_capacity : data_len;
+
+    std::memcpy(_underflow.data() + _len_underflow, data_ptr, bytes_processed);
+
+    _len_underflow += bytes_processed;
+    if (_len_underflow == BLOCK_SIZE_BYTES) {
+      _hash_blocks(_underflow.data(), BLOCK_SIZE_BYTES);
+      _len_underflow = 0;
+    }
+  }
+  if (auto bytes_remaining = data_len - bytes_processed;
+      bytes_remaining >= BLOCK_SIZE_BYTES) {
+    std::size_t bytes_hashed =
+        (bits64(bytes_remaining) & bits64(BLOCK_SIZE_BYTES - 1).flip())
+            .to_ulong();
+    _hash_blocks(data_ptr + bytes_processed, bytes_hashed);
+    bytes_processed += bytes_hashed;
+  }
+  if (auto bytes_remaining = data_len - bytes_processed; bytes_remaining > 0) {
+    std::memcpy(_underflow.data(), data_ptr + bytes_processed, bytes_remaining);
+
+    _len_underflow = bytes_remaining;
+  }
+
+  return;
+};
+
+template <typename uint_t, std::size_t digest_size, std::size_t block_size>
+void algorithm<uint_t, digest_size, block_size>::_hash_blocks(
+    std::byte *data_ptr, std::size_t data_len) {
+
+  const auto [_k, num_k] = get_block_constants<uint_t, block_size>();
+  uint_t digest[DIGEST_SIZE_UINT];
+  uint_t _d[DIGEST_SIZE_UINT];
+  uint_t w[num_k];
+  std::size_t i = 0, j = 0;
+  uint_t v1 = 0, v2 = 0, t1 = 0, t2 = 0;
+  enum { a, b, c, d, e, f, g, h };
+
+  std::memcpy(digest, _digest_wip.data(), DIGEST_SIZE_BYTES);
+
+  while (data_len >= BLOCK_SIZE_BYTES) {
+
+    for (i = 0; i < 16; i++) {
+      j = i * sizeof(uint_t);
+      w[i] = uint_t(data_ptr[j]) << 24 | uint_t(data_ptr[j + 1]) << 16 |
+             uint_t(data_ptr[j + 2]) << 8 | uint_t(data_ptr[j + 3]);
+    }
+    for (i = 16; i < num_k; i++) {
+      v1 = w[i - 2];
+      t1 = (v1 >> 17 | v1 << 15) ^ (v1 >> 19 | v1 << 13) ^ (v1 >> 10);
+      v2 = w[i - 15];
+      t2 = (v2 >> 7 | v2 << 25) ^ (v2 >> 18 | v2 << 14) ^ (v2 >> 3);
+      w[i] = t1 + w[i - 7] + t2 + w[i - 16];
+    }
+
+    std::memcpy(_d, digest, DIGEST_SIZE_BYTES);
+
+    for (i = 0; i < num_k; i++) {
+      t1 = _d[h] +
+           ((_d[e] >> 6 | _d[e] << 26) ^ (_d[e] >> 11 | _d[e] << 21) ^
+            (_d[e] >> 25 | _d[e] << 7)) +
+           ((_d[e] & _d[f]) ^ (~_d[e] & _d[g])) + _k[i] + w[i];
+
+      t2 = ((_d[a] >> 2 | _d[a] << 30) ^ (_d[a] >> 13 | _d[a] << 19) ^
+            (_d[a] >> 22 | _d[a] << 10)) +
+           ((_d[a] & _d[b]) ^ (_d[a] & _d[c]) ^ (_d[b] & _d[c]));
+
+      _d[h] = _d[g];
+      _d[g] = _d[f];
+      _d[f] = _d[e];
+      _d[e] = _d[d] + t1;
+      _d[d] = _d[c];
+      _d[c] = _d[b];
+      _d[b] = _d[a];
+      _d[a] = t1 + t2;
+    }
+
+    digest[0] += _d[a];
+    digest[1] += _d[b];
+    digest[2] += _d[c];
+    digest[3] += _d[d];
+    digest[4] += _d[e];
+    digest[5] += _d[f];
+    digest[6] += _d[g];
+    digest[7] += _d[h];
+
+    data_ptr += BLOCK_SIZE_BYTES;
+    data_len -= BLOCK_SIZE_BYTES;
+  }
+
+  std::memcpy(_digest_wip.data(), digest, DIGEST_SIZE_BYTES);
+
+  return;
+};
+// template <typename uint_t, std::size_t digest_size, std::size_t block_size>
+// class algorithm {
+// public:
+// using digest_t = std::array<std::byte, digest_size>;
+
+// algorithm() { reset(); };
+
+// std::size_t get_digest_size() const { return digest_size; };
+
+// digest_t get_digest(void) {
+//  digest_t digest;
+//  std::byte padding[BLOCK_SIZE_BYTES];
+//  std::uint64_t len_bits = _len_data_hashed << 3;
+
+//  std::memset(padding, 0, BLOCK_SIZE_BYTES);
+//  padding[0] = std::byte(0x80);
+
+//  std::int32_t pad_len = 56 - (_len_data_hashed % BLOCK_SIZE_BYTES);
+
+//  if (pad_len <= 0)
+//    pad_len += BLOCK_SIZE_BYTES;
+//  hash_data(padding, pad_len);
+
+//  padding[0] = std::byte(len_bits >> 56);
+//  padding[1] = std::byte(len_bits >> 48);
+//  padding[2] = std::byte(len_bits >> 40);
+//  padding[3] = std::byte(len_bits >> 32);
+//  padding[4] = std::byte(len_bits >> 24);
+//  padding[5] = std::byte(len_bits >> 16);
+//  padding[6] = std::byte(len_bits >> 8);
+//  padding[7] = std::byte(len_bits);
+
+//  hash_data(padding, 8);
+
+//  assert(_len_underflow == 0);
+
+//  std::size_t byte_offset = 0;
+
+//  for (uint_t hash_uint : _digest_wip) {
+//    digest[byte_offset] = std::byte(hash_uint >> 24);
+//    digest[++byte_offset] = std::byte(hash_uint >> 16);
+//    digest[++byte_offset] = std::byte(hash_uint >> 8);
+//    digest[++byte_offset] = std::byte(hash_uint);
+//    byte_offset += 1;
+//  }
+//  return digest;
+//}
+
+// void hash_data(std::byte *data_ptr, std::size_t data_len) {
+//  if (data_len == 0 || data_ptr == nullptr)
+//    return;
+//
+//  using bits64 = std::bitset<64>;
+//
+//  std::size_t bytes_processed = 0;
+//
+//  _len_data_hashed += data_len;
+//
+//  if (_len_underflow > 0) {
+//    std::size_t underflow_capacity = UNDERFLOW_MAXSIZE_BYTES - _len_underflow;
+//    bytes_processed =
+//        (data_len >= underflow_capacity) ? underflow_capacity : data_len;
+//
+//    std::memcpy(_underflow.data() + _len_underflow, data_ptr,
+//    bytes_processed);
+//
+//    _len_underflow += bytes_processed;
+//    if (_len_underflow == BLOCK_SIZE_BYTES) {
+//      _hash_blocks(_underflow.data(), BLOCK_SIZE_BYTES);
+//      _len_underflow = 0;
+//    }
+//  }
+//  if (auto bytes_remaining = data_len - bytes_processed;
+//      bytes_remaining >= BLOCK_SIZE_BYTES) {
+//    std::size_t bytes_hashed =
+//        (bits64(bytes_remaining) & bits64(BLOCK_SIZE_BYTES - 1).flip())
+//            .to_ulong();
+//    _hash_blocks(data_ptr + bytes_processed, bytes_hashed);
+//    bytes_processed += bytes_hashed;
+//  }
+//  if (auto bytes_remaining = data_len - bytes_processed; bytes_remaining > 0)
+//  {
+//    std::memcpy(_underflow.data(), data_ptr + bytes_processed,
+//    bytes_remaining);
+//
+//    _len_underflow = bytes_remaining;
+//  }
+//
+//  return;
+//}
+
+// void reset(void) {
+//  _digest_wip = get_digest_init_vals<uint_t, digest_size, block_size>();
+//  _len_data_hashed = _len_underflow = 0;
+//};
+//
+// private:
+// const std::size_t BLOCK_SIZE_BYTES = block_size;
+// const std::size_t UNDERFLOW_MAXSIZE_BYTES = block_size;
+//
+// std::array<std::byte, block_size> _underflow;
+// std::array<uint_t, DIGEST_SIZE_UINT> _digest_wip;
+// const std::size_t DIGEST_SIZE_BYTES = digest_size;
+// std::uint64_t _len_data_hashed;
+// std::size_t _len_underflow;
+//
+// void _hash_blocks(std::byte *data_ptr, std::size_t data_len) {
+//
+//  const auto [_k, num_k] = get_block_constants<uint_t, block_size>();
+//  uint_t digest[DIGEST_SIZE_UINT];
+//  uint_t _d[DIGEST_SIZE_UINT];
+//  uint_t w[num_k];
+//  std::size_t i = 0, j = 0;
+//  uint_t v1 = 0, v2 = 0, t1 = 0, t2 = 0;
+//  enum { a, b, c, d, e, f, g, h };
+//
+//  std::memcpy(digest, _digest_wip.data(), DIGEST_SIZE_BYTES);
+//
+//  while (data_len >= BLOCK_SIZE_BYTES) {
+//
+//    for (i = 0; i < 16; i++) {
+//      j = i * sizeof(uint_t);
+//      w[i] = uint_t(data_ptr[j]) << 24 | uint_t(data_ptr[j + 1]) << 16 |
+//             uint_t(data_ptr[j + 2]) << 8 | uint_t(data_ptr[j + 3]);
+//    }
+//    for (i = 16; i < num_k; i++) {
+//      v1 = w[i - 2];
+//      t1 = (v1 >> 17 | v1 << 15) ^ (v1 >> 19 | v1 << 13) ^ (v1 >> 10);
+//      v2 = w[i - 15];
+//      t2 = (v2 >> 7 | v2 << 25) ^ (v2 >> 18 | v2 << 14) ^ (v2 >> 3);
+//      w[i] = t1 + w[i - 7] + t2 + w[i - 16];
+//    }
+//
+//    std::memcpy(_d, digest, DIGEST_SIZE_BYTES);
+//
+//    for (i = 0; i < num_k; i++) {
+//      t1 = _d[h] +
+//           ((_d[e] >> 6 | _d[e] << 26) ^ (_d[e] >> 11 | _d[e] << 21) ^
+//            (_d[e] >> 25 | _d[e] << 7)) +
+//           ((_d[e] & _d[f]) ^ (~_d[e] & _d[g])) + _k[i] + w[i];
+//
+//      t2 = ((_d[a] >> 2 | _d[a] << 30) ^ (_d[a] >> 13 | _d[a] << 19) ^
+//            (_d[a] >> 22 | _d[a] << 10)) +
+//           ((_d[a] & _d[b]) ^ (_d[a] & _d[c]) ^ (_d[b] & _d[c]));
+//
+//      _d[h] = _d[g];
+//      _d[g] = _d[f];
+//      _d[f] = _d[e];
+//      _d[e] = _d[d] + t1;
+//      _d[d] = _d[c];
+//      _d[c] = _d[b];
+//      _d[b] = _d[a];
+//      _d[a] = t1 + t2;
+//    }
+//
+//    digest[0] += _d[a];
+//    digest[1] += _d[b];
+//    digest[2] += _d[c];
+//    digest[3] += _d[d];
+//    digest[4] += _d[e];
+//    digest[5] += _d[f];
+//    digest[6] += _d[g];
+//    digest[7] += _d[h];
+//
+//    data_ptr += BLOCK_SIZE_BYTES;
+//    data_len -= BLOCK_SIZE_BYTES;
+//  }
+//
+//  std::memcpy(_digest_wip.data(), digest, DIGEST_SIZE_BYTES);
+//
+//  return;
+//}
+//};
 
 enum class hash_algorithm { sha256, sha512 };
 
@@ -77,7 +443,6 @@ struct hash_blocks {
     std::memcpy(digest, _digest_wip, digest_size);
 
     while (data_len >= block_size) {
-
       for (i = 0; i < 16; i++) {
         j = i * sizeof(int_type);
         if constexpr (algorithm == hash_algorithm::sha256) {
