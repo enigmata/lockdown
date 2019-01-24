@@ -1,19 +1,13 @@
-#include <bitset>
 #include <cstdio>
 #include <cstdlib>
+#include <optional>
 
-#include "sha256.hpp"
-
-namespace sha256 = crypto::sha256;
+#include "sha.hpp"
+#include "sha_test.hpp"
 
 using B = std::byte;
-
-struct testcase_t {
-  std::string_view string;
-  sha256::hash_algorithm::digest_t digest;
-};
-
-const std::array<testcase_t, 16> testcases{
+const std::size_t NUM_TESTCASES = 16;
+const testcases_t<crypto::sha::sha256_hash, NUM_TESTCASES> testcases{
     {{"",
       {B{0xe3}, B{0xb0}, B{0xc4}, B{0x42}, B{0x98}, B{0xfc}, B{0x1c}, B{0x14},
        B{0x9a}, B{0xfb}, B{0xf4}, B{0xc8}, B{0x99}, B{0x6f}, B{0xb9}, B{0x24},
@@ -98,43 +92,6 @@ const std::array<testcase_t, 16> testcases{
        B{0xfe}, B{0x29}, B{0xc3}, B{0x34}}}}};
 
 int main(int argc, char *argv[]) {
-  int rc = 0;
-  std::size_t tcnum = 0, tctotal = testcases.size();
-  sha256::hash_algorithm hash;
-
-  if (argc > 1) {
-    int requested_tcnum = std::atoi(argv[1]);
-    if (requested_tcnum < 1 || std::size_t(requested_tcnum) > tctotal) {
-      std::printf("\nERROR: Requested testcase number was out of range. Valid "
-                  "range is [1-%lu].\n",
-                  tctotal);
-      std::printf("USAGE: sha256_test [testcase#]\n");
-      std::printf("NOTE: Do not provide a testcase number in order to run all "
-                  "testcases.\n");
-      return -1;
-    }
-    tctotal = (std::size_t)requested_tcnum;
-    tcnum = tctotal - 1;
-    std::printf("\nTestcase (selected 1 out of %lu):\n", testcases.size());
-  } else {
-    std::printf("\nTestcases (%lu):\n", tctotal);
-  }
-
-  for (; tcnum < tctotal; ++tcnum) {
-
-    hash.hash_data(testcases[tcnum].string);
-
-    std::printf("%04lu: ", tcnum + 1);
-    if (testcases[tcnum].digest == hash.get_digest()) {
-      std::printf("passed");
-    } else {
-      std::printf("failed");
-      rc = -1;
-    }
-    std::printf(" \"%s\"\n", testcases[tcnum].string.data());
-
-    hash.reset();
-  }
-
-  return rc;
+  return run_testcases<crypto::sha::sha256_hash, NUM_TESTCASES>(
+      process_cmdline_args(argc, argv, NUM_TESTCASES), testcases);
 }
