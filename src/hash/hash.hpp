@@ -12,12 +12,14 @@ public:
   using digest_t = std::array<std::byte, Algorithm::digest_size_bytes>;
 
   hash &operator<<(std::string_view in_data) {
-    _algorithm.hash_data(in_data);
+    _algorithm.hash_data((std::byte *)(in_data.data()),
+                         in_data.length() *
+                             sizeof(std::string_view::value_type));
     return *this;
   };
 
   hash &operator>>(digest_t &out_digest) {
-    out_digest = _algorithm.get_digest();
+    out_digest = get_digest();
     return *this;
   };
 
