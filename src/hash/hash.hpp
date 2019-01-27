@@ -5,6 +5,8 @@
 #include <cstddef>
 #include <string_view>
 
+#include "sha/sha.hpp"
+
 namespace crypto {
 
 template <class Algorithm> class hash {
@@ -30,6 +32,9 @@ public:
 private:
   Algorithm _algorithm;
 };
+
+using sha256_hash = hash<crypto::sha::sha256_hash>;
+using sha256_224_hash = hash<crypto::sha::sha256_224_hash>;
 
 } // namespace crypto
 
