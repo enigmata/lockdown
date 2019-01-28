@@ -25,3 +25,18 @@ add_test(NAME hash<sha224>_on_string_paul_glick_quote
 add_test(NAME hash<sha224>_on_string_63_chars
          COMMAND hash_test 7
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash)
+add_test(NAME hash<sha512>_on_string_null
+         COMMAND hash_test 8
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash)
+add_test(NAME hash<sha512>_on_string_a
+         COMMAND hash_test 9
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash)
+add_test(NAME hash<sha512>_on_string_63_chars
+         COMMAND hash_test 10
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash)
+add_test(NAME hash<sha512>_on_string_111_chars
+         COMMAND hash_test 11
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash)
+add_test(NAME hash<sha512>_on_string_64_chars
+         COMMAND hash_test 12
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash)

@@ -1,3 +1,6 @@
+#ifndef __SHA_TEST_HPP__
+#define __SHA_TEST_HPP__ 1
+
 #include <cstdio>
 #include <cstdlib>
 #include <optional>
@@ -69,3 +72,4 @@ requested_tcnum_t process_cmdline_args(int argc, char *argv[],
   }
   return requested_tcnum;
 };
+#endif

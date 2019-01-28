@@ -41,6 +41,8 @@ private:
   void _hash_blocks(std::byte *data_ptr, std::size_t data_len);
 };
 
+using sha512_hash =
+    algorithm<std::uint64_t, SHA512_DIGEST_SIZE, SHA512FAMILY_BLOCK_SIZE>;
 using sha256_hash =
     algorithm<std::uint32_t, SHA256_DIGEST_SIZE, SHA256FAMILY_BLOCK_SIZE>;
 using sha256_224_hash =
@@ -55,34 +57,48 @@ algorithm<uint_t, digest_size, block_size>::get_digest(void) {
   std::memset(padding, 0, block_size);
   padding[0] = std::byte(0x80);
 
-  std::int32_t pad_len = 56 - (_len_data_hashed % block_size);
+  constexpr std::int32_t pad_len_placeholder = block_size - (block_size / 8);
+  std::int32_t pad_len = pad_len_placeholder - (_len_data_hashed % block_size);
 
   if (pad_len <= 0)
     pad_len += block_size;
   hash_data(padding, pad_len);
 
-  padding[0] = std::byte(len_bits >> 56);
-  padding[1] = std::byte(len_bits >> 48);
-  padding[2] = std::byte(len_bits >> 40);
-  padding[3] = std::byte(len_bits >> 32);
-  padding[4] = std::byte(len_bits >> 24);
-  padding[5] = std::byte(len_bits >> 16);
-  padding[6] = std::byte(len_bits >> 8);
-  padding[7] = std::byte(len_bits);
+  std::size_t byte_offset = 0;
 
-  hash_data(padding, 8);
+  if constexpr ((block_size / 8) / sizeof(_len_data_hashed) > 1) {
+    std::memset(padding, 0, sizeof(_len_data_hashed));
+    byte_offset = sizeof(_len_data_hashed);
+  }
+
+  padding[byte_offset] = std::byte(len_bits >> 56);
+  padding[++byte_offset] = std::byte(len_bits >> 48);
+  padding[++byte_offset] = std::byte(len_bits >> 40);
+  padding[++byte_offset] = std::byte(len_bits >> 32);
+  padding[++byte_offset] = std::byte(len_bits >> 24);
+  padding[++byte_offset] = std::byte(len_bits >> 16);
+  padding[++byte_offset] = std::byte(len_bits >> 8);
+  padding[++byte_offset] = std::byte(len_bits);
+
+  hash_data(padding, byte_offset + 1);
 
   assert(_len_underflow == 0);
 
   constexpr std::size_t family_digest_size = block_size / 2;
   std::array<std::byte, family_digest_size> family_digest;
-  std::size_t byte_offset = sizeof(uint_t) - 1;
+  byte_offset = sizeof(uint_t) - 1;
 
   for (uint_t hash_uint : _digest_wip) {
     family_digest[byte_offset] = std::byte(hash_uint);
     family_digest[byte_offset - 1] = std::byte(hash_uint >> 8);
     family_digest[byte_offset - 2] = std::byte(hash_uint >> 16);
     family_digest[byte_offset - 3] = std::byte(hash_uint >> 24);
+    if constexpr (sizeof(uint_t) == 8) {
+      family_digest[byte_offset - 4] = std::byte(hash_uint >> 32);
+      family_digest[byte_offset - 5] = std::byte(hash_uint >> 40);
+      family_digest[byte_offset - 6] = std::byte(hash_uint >> 48);
+      family_digest[byte_offset - 7] = std::byte(hash_uint >> 56);
+    }
     byte_offset += sizeof(uint_t);
   }
 
@@ -156,28 +172,62 @@ void algorithm<uint_t, digest_size, block_size>::_hash_blocks(
 
     for (i = 0; i < 16; i++) {
       j = i * sizeof(uint_t);
-      w[i] = uint_t(data_ptr[j]) << 24 | uint_t(data_ptr[j + 1]) << 16 |
-             uint_t(data_ptr[j + 2]) << 8 | uint_t(data_ptr[j + 3]);
+      if constexpr (block_size == SHA256FAMILY_BLOCK_SIZE) {
+        w[i] = uint_t(data_ptr[j]) << 24 | uint_t(data_ptr[j + 1]) << 16 |
+               uint_t(data_ptr[j + 2]) << 8 | uint_t(data_ptr[j + 3]);
+      } else if (block_size == SHA512FAMILY_BLOCK_SIZE) {
+        w[i] = uint_t(data_ptr[j]) << 56 | uint_t(data_ptr[j + 1]) << 48 |
+               uint_t(data_ptr[j + 2]) << 40 | uint_t(data_ptr[j + 3]) << 32 |
+               uint_t(data_ptr[j + 4]) << 24 | uint_t(data_ptr[j + 5]) << 16 |
+               uint_t(data_ptr[j + 6]) << 8 | uint_t(data_ptr[j + 7]);
+      }
     }
     for (i = 16; i < num_k; i++) {
       v1 = w[i - 2];
-      t1 = (v1 >> 17 | v1 << 15) ^ (v1 >> 19 | v1 << 13) ^ (v1 >> 10);
+      if constexpr (block_size == SHA256FAMILY_BLOCK_SIZE) {
+        t1 = (v1 >> 17 | v1 << (32 - 17)) ^ (v1 >> 19 | v1 << (32 - 19)) ^
+             (v1 >> 10);
+      } else if (block_size == SHA512FAMILY_BLOCK_SIZE) {
+        t1 = (v1 >> 19 | v1 << (64 - 19)) ^ (v1 >> 61 | v1 << (64 - 61)) ^
+             (v1 >> 6);
+      }
       v2 = w[i - 15];
-      t2 = (v2 >> 7 | v2 << 25) ^ (v2 >> 18 | v2 << 14) ^ (v2 >> 3);
+      if constexpr (block_size == SHA256FAMILY_BLOCK_SIZE) {
+        t2 = (v2 >> 7 | v2 << (32 - 7)) ^ (v2 >> 18 | v2 << (32 - 18)) ^
+             (v2 >> 3);
+      } else if (block_size == SHA512FAMILY_BLOCK_SIZE) {
+        t2 =
+            (v2 >> 1 | v2 << (64 - 1)) ^ (v2 >> 8 | v2 << (64 - 8)) ^ (v2 >> 7);
+      }
       w[i] = t1 + w[i - 7] + t2 + w[i - 16];
     }
 
     std::memcpy(_d, digest, family_digest_size);
 
     for (i = 0; i < num_k; i++) {
-      t1 = _d[h] +
-           ((_d[e] >> 6 | _d[e] << 26) ^ (_d[e] >> 11 | _d[e] << 21) ^
-            (_d[e] >> 25 | _d[e] << 7)) +
-           ((_d[e] & _d[f]) ^ (~_d[e] & _d[g])) + _k[i] + w[i];
+      if constexpr (block_size == SHA256FAMILY_BLOCK_SIZE) {
+        t1 = _d[h] +
+             ((_d[e] >> 6 | _d[e] << (32 - 6)) ^
+              (_d[e] >> 11 | _d[e] << (32 - 11)) ^
+              (_d[e] >> 25 | _d[e] << (32 - 25))) +
+             ((_d[e] & _d[f]) ^ (~_d[e] & _d[g])) + _k[i] + w[i];
 
-      t2 = ((_d[a] >> 2 | _d[a] << 30) ^ (_d[a] >> 13 | _d[a] << 19) ^
-            (_d[a] >> 22 | _d[a] << 10)) +
-           ((_d[a] & _d[b]) ^ (_d[a] & _d[c]) ^ (_d[b] & _d[c]));
+        t2 = ((_d[a] >> 2 | _d[a] << (32 - 2)) ^
+              (_d[a] >> 13 | _d[a] << (32 - 13)) ^
+              (_d[a] >> 22 | _d[a] << (32 - 22))) +
+             ((_d[a] & _d[b]) ^ (_d[a] & _d[c]) ^ (_d[b] & _d[c]));
+      } else if (block_size == SHA512FAMILY_BLOCK_SIZE) {
+        t1 = _d[h] +
+             ((_d[e] >> 14 | _d[e] << (64 - 14)) ^
+              (_d[e] >> 18 | _d[e] << (64 - 18)) ^
+              (_d[e] >> 41 | _d[e] << (64 - 41))) +
+             ((_d[e] & _d[f]) ^ (~_d[e] & _d[g])) + _k[i] + w[i];
+
+        t2 = ((_d[a] >> 28 | _d[a] << (64 - 28)) ^
+              (_d[a] >> 34 | _d[a] << (64 - 34)) ^
+              (_d[a] >> 39 | _d[a] << (64 - 39))) +
+             ((_d[a] & _d[b]) ^ (_d[a] & _d[c]) ^ (_d[b] & _d[c]));
+      }
 
       _d[h] = _d[g];
       _d[g] = _d[f];
