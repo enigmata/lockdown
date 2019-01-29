@@ -34,6 +34,12 @@ constexpr std::array<uint_t, DIGEST_SIZE_UINT> get_digest_init_vals() {
             uint_t(0x3c6ef372fe94f82b), uint_t(0xa54ff53a5f1d36f1),
             uint_t(0x510e527fade682d1), uint_t(0x9b05688c2b3e6c1f),
             uint_t(0x1f83d9abfb41bd6b), uint_t(0x5be0cd19137e2179)};
+  } else if (block_size == SHA512FAMILY_BLOCK_SIZE &&
+             digest_size == SHA224_DIGEST_SIZE) {
+    return {uint_t(0x8c3d37c819544da2), uint_t(0x73e1996689dcd4d6),
+            uint_t(0x1dfab7ae32ff9c82), uint_t(0x679dd514582f9fcf),
+            uint_t(0x0f6d2b697bd44da8), uint_t(0x77e36f7304c48942),
+            uint_t(0x3f9d85a86a1d36c8), uint_t(0x1112e6ad91d692a1)};
   }
 };
 

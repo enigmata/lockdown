@@ -43,6 +43,8 @@ private:
 
 using sha512_hash =
     algorithm<std::uint64_t, SHA512_DIGEST_SIZE, SHA512FAMILY_BLOCK_SIZE>;
+using sha512_224_hash =
+    algorithm<std::uint64_t, SHA224_DIGEST_SIZE, SHA512FAMILY_BLOCK_SIZE>;
 using sha256_hash =
     algorithm<std::uint32_t, SHA256_DIGEST_SIZE, SHA256FAMILY_BLOCK_SIZE>;
 using sha256_224_hash =

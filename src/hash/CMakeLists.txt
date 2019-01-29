@@ -16,13 +16,13 @@ add_test(NAME hash<sha256>_on_string_64_chars
 add_test(NAME hash<sha256>_on_string_111_chars
          COMMAND hash_test 4
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash)
-add_test(NAME hash<sha224>_on_string_abcdefghij
+add_test(NAME hash<sha256-224>_on_string_abcdefghij
          COMMAND hash_test 5
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash)
-add_test(NAME hash<sha224>_on_string_paul_glick_quote
+add_test(NAME hash<sha256-224>_on_string_paul_glick_quote
          COMMAND hash_test 6
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash)
-add_test(NAME hash<sha224>_on_string_63_chars
+add_test(NAME hash<sha256-224>_on_string_63_chars
          COMMAND hash_test 7
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash)
 add_test(NAME hash<sha512>_on_string_null
@@ -39,4 +39,13 @@ add_test(NAME hash<sha512>_on_string_111_chars
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash)
 add_test(NAME hash<sha512>_on_string_64_chars
          COMMAND hash_test 12
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash)
+add_test(NAME hash<sha512-224>_on_string_abcdefghij
+         COMMAND hash_test 13
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash)
+add_test(NAME hash<sha512-224>_on_string_lewis-randall_rule
+         COMMAND hash_test 14
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash)
+add_test(NAME hash<sha512-224>_on_string_aldus_huxley_quote
+         COMMAND hash_test 15
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash)
