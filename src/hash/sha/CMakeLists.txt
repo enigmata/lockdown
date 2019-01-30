@@ -203,3 +203,54 @@ add_test(NAME sha512-224_on_string_lewis-randall_rule
 add_test(NAME sha512-224_on_string_aldus_huxley_quote
          COMMAND sha512-224_test 16
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+
+add_executable(sha512-256_test sha512-256_test.cpp)
+
+add_test(NAME sha512-256_on_string_null
+         COMMAND sha512-256_test 1
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha512-256_on_string_a
+         COMMAND sha512-256_test 2
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha512-256_on_string_ab
+         COMMAND sha512-256_test 3
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha512-256_on_string_abc
+         COMMAND sha512-256_test 4
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha512-256_on_string_abcd
+         COMMAND sha512-256_test 5
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha512-256_on_string_abcde
+         COMMAND sha512-256_test 6
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha512-256_on_string_abcdef
+         COMMAND sha512-256_test 7
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha512-256_on_string_abcdefg
+         COMMAND sha512-256_test 8
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha512-256_on_string_abcdefgh
+         COMMAND sha512-256_test 9
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha512-256_on_string_abcdefghi
+         COMMAND sha512-256_test 10
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha512-256_on_string_abcdefghij
+         COMMAND sha512-256_test 11
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha512-256_on_string_paul_glick_quote
+         COMMAND sha512-256_test 12
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha512-256_on_string_63_chars
+         COMMAND sha512-256_test 13
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha512-256_on_string_64_chars
+         COMMAND sha512-256_test 14
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha512-256_on_string_lewis-randall_rule
+         COMMAND sha512-256_test 15
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha512-256_on_string_aldus_huxley_quote
+         COMMAND sha512-256_test 16
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)

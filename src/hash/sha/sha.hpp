@@ -45,6 +45,8 @@ using sha512_hash = algorithm<SHA512FAMILY_WORD_SIZE, SHA512_DIGEST_SIZE,
                               SHA512FAMILY_BLOCK_SIZE>;
 using sha512_224_hash = algorithm<SHA512FAMILY_WORD_SIZE, SHA224_DIGEST_SIZE,
                                   SHA512FAMILY_BLOCK_SIZE>;
+using sha512_256_hash = algorithm<SHA512FAMILY_WORD_SIZE, SHA256_DIGEST_SIZE,
+                                  SHA512FAMILY_BLOCK_SIZE>;
 using sha256_hash = algorithm<SHA256FAMILY_WORD_SIZE, SHA256_DIGEST_SIZE,
                               SHA256FAMILY_BLOCK_SIZE>;
 using sha256_224_hash = algorithm<SHA256FAMILY_WORD_SIZE, SHA224_DIGEST_SIZE,

@@ -49,3 +49,12 @@ add_test(NAME hash<sha512-224>_on_string_lewis-randall_rule
 add_test(NAME hash<sha512-224>_on_string_aldus_huxley_quote
          COMMAND hash_test 15
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash)
+add_test(NAME hash<sha512-256>_on_string_abcdefghij
+         COMMAND hash_test 16
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash)
+add_test(NAME hash<sha512-256>_on_string_lewis-randall_rule
+         COMMAND hash_test 17
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash)
+add_test(NAME hash<sha512-256>_on_string_aldus_huxley_quote
+         COMMAND hash_test 18
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash)
