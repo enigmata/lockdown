@@ -41,14 +41,14 @@ private:
   void _hash_blocks(std::byte *data_ptr, std::size_t data_len);
 };
 
-using sha512_hash =
-    algorithm<std::uint64_t, SHA512_DIGEST_SIZE, SHA512FAMILY_BLOCK_SIZE>;
-using sha512_224_hash =
-    algorithm<std::uint64_t, SHA224_DIGEST_SIZE, SHA512FAMILY_BLOCK_SIZE>;
-using sha256_hash =
-    algorithm<std::uint32_t, SHA256_DIGEST_SIZE, SHA256FAMILY_BLOCK_SIZE>;
-using sha256_224_hash =
-    algorithm<std::uint32_t, SHA224_DIGEST_SIZE, SHA256FAMILY_BLOCK_SIZE>;
+using sha512_hash = algorithm<SHA512FAMILY_WORD_SIZE, SHA512_DIGEST_SIZE,
+                              SHA512FAMILY_BLOCK_SIZE>;
+using sha512_224_hash = algorithm<SHA512FAMILY_WORD_SIZE, SHA224_DIGEST_SIZE,
+                                  SHA512FAMILY_BLOCK_SIZE>;
+using sha256_hash = algorithm<SHA256FAMILY_WORD_SIZE, SHA256_DIGEST_SIZE,
+                              SHA256FAMILY_BLOCK_SIZE>;
+using sha256_224_hash = algorithm<SHA256FAMILY_WORD_SIZE, SHA224_DIGEST_SIZE,
+                                  SHA256FAMILY_BLOCK_SIZE>;
 
 template <typename uint_t, std::size_t digest_size, std::size_t block_size>
 std::array<std::byte, digest_size>
@@ -160,10 +160,10 @@ void algorithm<uint_t, digest_size, block_size>::_hash_blocks(
     std::byte *data_ptr, std::size_t data_len) {
 
   constexpr std::size_t family_digest_size = block_size / 2;
-  const auto [_k, num_k] = get_block_constants<uint_t, block_size>();
+  const auto [_k, num_rounds] = get_block_constants<uint_t, block_size>();
   uint_t digest[DIGEST_SIZE_UINT];
   uint_t _d[DIGEST_SIZE_UINT];
-  uint_t w[num_k];
+  uint_t w[num_rounds];
   std::size_t i = 0, j = 0;
   uint_t v1 = 0, v2 = 0, t1 = 0, t2 = 0;
   enum { a, b, c, d, e, f, g, h };
@@ -184,7 +184,7 @@ void algorithm<uint_t, digest_size, block_size>::_hash_blocks(
                uint_t(data_ptr[j + 6]) << 8 | uint_t(data_ptr[j + 7]);
       }
     }
-    for (i = 16; i < num_k; i++) {
+    for (i = 16; i < num_rounds; i++) {
       v1 = w[i - 2];
       if constexpr (block_size == SHA256FAMILY_BLOCK_SIZE) {
         t1 = (v1 >> 17 | v1 << (32 - 17)) ^ (v1 >> 19 | v1 << (32 - 19)) ^
@@ -206,7 +206,7 @@ void algorithm<uint_t, digest_size, block_size>::_hash_blocks(
 
     std::memcpy(_d, digest, family_digest_size);
 
-    for (i = 0; i < num_k; i++) {
+    for (i = 0; i < num_rounds; i++) {
       if constexpr (block_size == SHA256FAMILY_BLOCK_SIZE) {
         t1 = _d[h] +
              ((_d[e] >> 6 | _d[e] << (32 - 6)) ^

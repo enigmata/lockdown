@@ -15,8 +15,13 @@ enum digest_sizes : std::size_t {
   SHA512_DIGEST_SIZE = 64
 };
 
+using SHA256FAMILY_WORD_SIZE = std::uint32_t;
+using SHA512FAMILY_WORD_SIZE = std::uint64_t;
+
 constexpr std::size_t DIGEST_SIZE_UINT = 8;
 constexpr std::size_t MAX_BLOCK_CONSTANTS = 80;
+constexpr std::size_t SHA256FAMILY_ROUNDS = 64;
+constexpr std::size_t SHA512FAMILY_ROUNDS = 80;
 
 template <typename uint_t, std::size_t digest_size, std::size_t block_size>
 constexpr std::array<uint_t, DIGEST_SIZE_UINT> get_digest_init_vals() {
@@ -64,7 +69,7 @@ get_block_constants() {
                 0x0,        0x0,        0x0,        0x0,        0x0,
                 0x0,        0x0,        0x0,        0x0,        0x0,
                 0x0,        0x0,        0x0,        0x0,        0x0},
-            64};
+            SHA256FAMILY_ROUNDS};
   } else if (block_size == SHA512FAMILY_BLOCK_SIZE) {
     return {std::array<std::uint64_t, MAX_BLOCK_CONSTANTS>{
                 0x428a2f98d728ae22, 0x7137449123ef65cd, 0xb5c0fbcfec4d3b2f,
@@ -94,7 +99,7 @@ get_block_constants() {
                 0x28db77f523047d84, 0x32caab7b40c72493, 0x3c9ebe0a15c9bebc,
                 0x431d67c49c100d4c, 0x4cc5d4becb3e42b6, 0x597f299cfc657e2a,
                 0x5fcb6fab3ad6faec, 0x6c44198c4a475817},
-            80};
+            SHA512FAMILY_ROUNDS};
   }
 };
 } // namespace crypto::sha
