@@ -254,3 +254,54 @@ add_test(NAME sha512-256_on_string_lewis-randall_rule
 add_test(NAME sha512-256_on_string_aldus_huxley_quote
          COMMAND sha512-256_test 16
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+
+add_executable(sha384_test sha384_test.cpp)
+
+add_test(NAME sha384_on_string_null
+         COMMAND sha384_test 1
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha384_on_string_a
+         COMMAND sha384_test 2
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha384_on_string_ab
+         COMMAND sha384_test 3
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha384_on_string_abc
+         COMMAND sha384_test 4
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha384_on_string_abcd
+         COMMAND sha384_test 5
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha384_on_string_abcde
+         COMMAND sha384_test 6
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha384_on_string_abcdef
+         COMMAND sha384_test 7
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha384_on_string_abcdefg
+         COMMAND sha384_test 8
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha384_on_string_abcdefgh
+         COMMAND sha384_test 9
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha384_on_string_abcdefghi
+         COMMAND sha384_test 10
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha384_on_string_abcdefghij
+         COMMAND sha384_test 11
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha384_on_string_paul_glick_quote
+         COMMAND sha384_test 12
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha384_on_string_63_chars
+         COMMAND sha384_test 13
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha384_on_string_64_chars
+         COMMAND sha384_test 14
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha384_on_string_lewis-randall_rule
+         COMMAND sha384_test 15
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
+add_test(NAME sha384_on_string_aldus_huxley_quote
+         COMMAND sha384_test 16
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)

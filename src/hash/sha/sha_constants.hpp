@@ -12,6 +12,7 @@ enum block_sizes : std::size_t {
 enum digest_sizes : std::size_t {
   SHA224_DIGEST_SIZE = 28,
   SHA256_DIGEST_SIZE = 32,
+  SHA384_DIGEST_SIZE = 48,
   SHA512_DIGEST_SIZE = 64
 };
 
@@ -51,6 +52,12 @@ constexpr std::array<uint_t, DIGEST_SIZE_UINT> get_digest_init_vals() {
             uint_t(0x2393b86b6f53b151), uint_t(0x963877195940eabd),
             uint_t(0x96283ee2a88effe3), uint_t(0xbe5e1e2553863992),
             uint_t(0x2b0199fc2c85b8aa), uint_t(0x0eb72ddc81c52ca2)};
+  } else if (block_size == SHA512FAMILY_BLOCK_SIZE &&
+             digest_size == SHA384_DIGEST_SIZE) {
+    return {uint_t(0xcbbb9d5dc1059ed8), uint_t(0x629a292a367cd507),
+            uint_t(0x9159015a3070dd17), uint_t(0x152fecd8f70e5939),
+            uint_t(0x67332667ffc00b31), uint_t(0x8eb44a8768581511),
+            uint_t(0xdb0c2e0d64f98fa7), uint_t(0x47b5481dbefa4fa4)};
   }
 };
 
