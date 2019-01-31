@@ -7,7 +7,7 @@
 
 using B = std::byte;
 const std::size_t NUM_TESTCASES = 16;
-const testcases_t<crypto::sha::sha256_224_hash, NUM_TESTCASES> testcases{
+const testcases_t<crypto::sha::sha224_hash, NUM_TESTCASES> testcases{
     {{"", {B{0xd1}, B{0x4a}, B{0x02}, B{0x8c}, B{0x2a}, B{0x3a}, B{0x2b},
            B{0xc9}, B{0x47}, B{0x61}, B{0x02}, B{0xbb}, B{0x28}, B{0x82},
            B{0x34}, B{0xc4}, B{0x15}, B{0xa2}, B{0xb0}, B{0x1f}, B{0x82},
@@ -85,6 +85,6 @@ const testcases_t<crypto::sha::sha256_224_hash, NUM_TESTCASES> testcases{
        B{0xd4}, B{0x74}, B{0xa2}, B{0x09}, B{0xcc}, B{0xb4}, B{0xa6}}}}};
 
 int main(int argc, char *argv[]) {
-  return run_testcases<crypto::sha::sha256_224_hash, NUM_TESTCASES>(
+  return run_testcases<crypto::sha::sha224_hash, NUM_TESTCASES>(
       process_cmdline_args(argc, argv, NUM_TESTCASES), testcases);
 }

@@ -41,18 +41,18 @@ private:
   void _hash_blocks(std::byte *data_ptr, std::size_t data_len);
 };
 
+using sha224_hash = algorithm<SHA256FAMILY_WORD_SIZE, SHA224_DIGEST_SIZE,
+                              SHA256FAMILY_BLOCK_SIZE>;
+using sha256_hash = algorithm<SHA256FAMILY_WORD_SIZE, SHA256_DIGEST_SIZE,
+                              SHA256FAMILY_BLOCK_SIZE>;
+using sha384_hash = algorithm<SHA512FAMILY_WORD_SIZE, SHA384_DIGEST_SIZE,
+                              SHA512FAMILY_BLOCK_SIZE>;
 using sha512_hash = algorithm<SHA512FAMILY_WORD_SIZE, SHA512_DIGEST_SIZE,
                               SHA512FAMILY_BLOCK_SIZE>;
 using sha512_224_hash = algorithm<SHA512FAMILY_WORD_SIZE, SHA224_DIGEST_SIZE,
                                   SHA512FAMILY_BLOCK_SIZE>;
 using sha512_256_hash = algorithm<SHA512FAMILY_WORD_SIZE, SHA256_DIGEST_SIZE,
                                   SHA512FAMILY_BLOCK_SIZE>;
-using sha384_hash = algorithm<SHA512FAMILY_WORD_SIZE, SHA384_DIGEST_SIZE,
-                              SHA512FAMILY_BLOCK_SIZE>;
-using sha256_hash = algorithm<SHA256FAMILY_WORD_SIZE, SHA256_DIGEST_SIZE,
-                              SHA256FAMILY_BLOCK_SIZE>;
-using sha256_224_hash = algorithm<SHA256FAMILY_WORD_SIZE, SHA224_DIGEST_SIZE,
-                                  SHA256FAMILY_BLOCK_SIZE>;
 
 template <typename uint_t, std::size_t digest_size, std::size_t block_size>
 std::array<std::byte, digest_size>
