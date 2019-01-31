@@ -33,12 +33,12 @@ private:
   Algorithm _algorithm;
 };
 
+using sha224_hash = hash<crypto::sha::sha224_hash>;
+using sha256_hash = hash<crypto::sha::sha256_hash>;
+using sha384_hash = hash<crypto::sha::sha384_hash>;
 using sha512_hash = hash<crypto::sha::sha512_hash>;
 using sha512_224_hash = hash<crypto::sha::sha512_224_hash>;
 using sha512_256_hash = hash<crypto::sha::sha512_256_hash>;
-using sha384_hash = hash<crypto::sha::sha384_hash>;
-using sha256_hash = hash<crypto::sha::sha256_hash>;
-using sha256_224_hash = hash<crypto::sha::sha256_224_hash>;
 
 } // namespace crypto
 
