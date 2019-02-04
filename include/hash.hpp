@@ -13,21 +13,21 @@ template <class Algorithm> class hash {
 public:
   using digest_t = std::array<std::byte, Algorithm::digest_size_bytes>;
 
-  hash &operator<<(std::string_view in_data) {
+  hash &operator<<(std::string_view in_data) noexcept {
     _algorithm.hash_data((std::byte *)(in_data.data()),
                          in_data.length() *
                              sizeof(std::string_view::value_type));
     return *this;
   };
 
-  hash &operator>>(digest_t &out_digest) {
+  hash &operator>>(digest_t &out_digest) noexcept {
     out_digest = get_digest();
     return *this;
   };
 
-  digest_t get_digest() { return _algorithm.get_digest(); }
+  digest_t get_digest() noexcept { return _algorithm.get_digest(); }
 
-  void reset() { _algorithm.reset(); };
+  void reset() noexcept { _algorithm.reset(); };
 
 private:
   Algorithm _algorithm;

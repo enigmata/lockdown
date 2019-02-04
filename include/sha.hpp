@@ -19,15 +19,17 @@ public:
 
   static const std::size_t digest_size_bytes = digest_size;
 
-  algorithm() { reset(); };
+  algorithm() noexcept { reset(); };
 
-  constexpr std::size_t get_digest_size() const { return digest_size; };
+  constexpr std::size_t get_digest_size() const noexcept {
+    return digest_size;
+  };
 
-  void hash_data(std::byte *data_ptr, std::size_t data_len);
+  void hash_data(std::byte *data_ptr, std::size_t data_len) noexcept;
 
-  digest_t get_digest(void);
+  digest_t get_digest(void) noexcept;
 
-  void reset(void) {
+  void reset(void) noexcept {
     _digest_wip = get_digest_init_vals<uint_t, digest_size, block_size>();
     _len_data_hashed = _len_underflow = 0;
   };
@@ -38,7 +40,7 @@ private:
   std::uint64_t _len_data_hashed;
   std::size_t _len_underflow;
 
-  void _hash_blocks(std::byte *data_ptr, std::size_t data_len);
+  void _hash_blocks(std::byte *data_ptr, std::size_t data_len) noexcept;
 };
 
 using sha224_hash = algorithm<SHA256FAMILY_WORD_SIZE, SHA224_DIGEST_SIZE,
@@ -56,7 +58,7 @@ using sha512_256_hash = algorithm<SHA512FAMILY_WORD_SIZE, SHA256_DIGEST_SIZE,
 
 template <typename uint_t, std::size_t digest_size, std::size_t block_size>
 std::array<std::byte, digest_size>
-algorithm<uint_t, digest_size, block_size>::get_digest(void) {
+algorithm<uint_t, digest_size, block_size>::get_digest(void) noexcept {
   std::byte padding[block_size];
   std::uint64_t len_bits = _len_data_hashed << 3;
 
@@ -119,7 +121,7 @@ algorithm<uint_t, digest_size, block_size>::get_digest(void) {
 
 template <typename uint_t, std::size_t digest_size, std::size_t block_size>
 void algorithm<uint_t, digest_size, block_size>::hash_data(
-    std::byte *data_ptr, std::size_t data_len) {
+    std::byte *data_ptr, std::size_t data_len) noexcept {
 
   if (data_len == 0 || data_ptr == nullptr)
     return;
@@ -161,7 +163,7 @@ void algorithm<uint_t, digest_size, block_size>::hash_data(
 
 template <typename uint_t, std::size_t digest_size, std::size_t block_size>
 void algorithm<uint_t, digest_size, block_size>::_hash_blocks(
-    std::byte *data_ptr, std::size_t data_len) {
+    std::byte *data_ptr, std::size_t data_len) noexcept {
 
   constexpr std::size_t family_digest_size = block_size / 2;
   const auto [_k, num_rounds] = get_block_constants<uint_t, block_size>();
