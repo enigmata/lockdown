@@ -1,6 +1,7 @@
 project(lockdown LANGUAGES CXX)
 
 add_executable(sha256_test sha256_test.cpp)
+target_include_directories(sha256_test PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 add_test(NAME sha256_on_string_null
          COMMAND sha256_test 1
@@ -52,6 +53,7 @@ add_test(NAME sha256_on_string_111_chars
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
 
 add_executable(sha224_test sha224_test.cpp)
+target_include_directories(sha224_test PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 add_test(NAME sha224_on_string_null
          COMMAND sha224_test 1
@@ -103,6 +105,7 @@ add_test(NAME sha224_on_string_111_chars
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
 
 add_executable(sha512_test sha512_test.cpp)
+target_include_directories(sha512_test PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 add_test(NAME sha512_on_string_null
          COMMAND sha512_test 1
@@ -154,6 +157,7 @@ add_test(NAME sha512_on_string_111_chars
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
 
 add_executable(sha512-224_test sha512-224_test.cpp)
+target_include_directories(sha512-224_test PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 add_test(NAME sha512-224_on_string_null
          COMMAND sha512-224_test 1
@@ -205,6 +209,7 @@ add_test(NAME sha512-224_on_string_aldus_huxley_quote
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
 
 add_executable(sha512-256_test sha512-256_test.cpp)
+target_include_directories(sha512-256_test PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 add_test(NAME sha512-256_on_string_null
          COMMAND sha512-256_test 1
@@ -256,6 +261,7 @@ add_test(NAME sha512-256_on_string_aldus_huxley_quote
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/hash/sha)
 
 add_executable(sha384_test sha384_test.cpp)
+target_include_directories(sha384_test PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 add_test(NAME sha384_on_string_null
          COMMAND sha384_test 1

@@ -5,7 +5,7 @@
 #include <cstddef>
 #include <string_view>
 
-#include "sha/sha.hpp"
+#include "sha.hpp"
 
 namespace crypto {
 

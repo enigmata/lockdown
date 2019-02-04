@@ -3,6 +3,7 @@ project(lockdown LANGUAGES CXX)
 add_subdirectory(sha)
 
 add_executable(hash_test hash_test.cpp)
+target_include_directories(hash_test PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 add_test(NAME hash<sha256>_on_string_null
          COMMAND hash_test 1
