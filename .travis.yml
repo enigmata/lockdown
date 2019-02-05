@@ -6,15 +6,7 @@ branches:
 
 matrix:
   include:
-    # - os: linux
-    #   addons:
-    #     apt:
-    #       sources:
-    #         - ubuntu-toolchain-r-test
-    #       packages:
-    #         - g++-7
-    #   env:
-    #     - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+    # Works on Precise & Trusty
     - os: linux
       addons:
         apt:
@@ -24,6 +16,16 @@ matrix:
             - g++-8
       env:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+    # works on Trusty
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-7
+          packages:
+            - clang-7
+      env:
+        - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
 
 before_install:
   - eval "${MATRIX_EVAL}"

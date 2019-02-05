@@ -1,6 +1,7 @@
 #ifndef __SHA_CONSTANTS_HPP__
 #define __SHA_CONSTANTS_HPP__ 1
 
+#include <array>
 #include <cstdint>
 
 namespace crypto::sha {
