@@ -8,7 +8,7 @@ on:
 jobs:
   build-test:
     name: Build then unit test binaries
-    runs-on: [macOS-latest]
+    runs-on: macOS-latest
     strategy:
       matrix:
         cxx: [g++-9, clang++]
