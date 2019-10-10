@@ -16,7 +16,8 @@ jobs:
       - name: Install build tools
         run: |
           brew update
-          brew install gcc@9 llvm@9 cmake
+          brew install gcc@9 llvm@9
+          brew upgrade cmake
       - name: Clone repo
         uses: actions/checkout@v1
       - name: Compile then test
