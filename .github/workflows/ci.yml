@@ -6,8 +6,8 @@ on:
       - master
 
 jobs:
-  build-test:
-    name: Build then unit test binaries
+  build-test-MacOS:
+    name: Build then unit test binaries on MacOS
     runs-on: macOS-latest
     strategy:
       matrix:
@@ -23,6 +23,41 @@ jobs:
       - name: Compile then test
         run: |
           export PATH="/usr/local/opt/llvm/bin:$PATH"
+          mkdir build
+          cd build
+          cmake -D CMAKE_CXX_COMPILER="$(which ${{ matrix.cxx }})" ..
+          make
+          make test
+  build-test-linux:
+    name: Build then unit test binaries on Linux
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        cxx: [g++-8, clang++-9]
+    steps:
+      - name: Install common build tools
+        run: |
+          wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
+          sudo apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+          sudo apt update
+          sudo apt install cmake
+      - name: Install llvm build tools
+        run: |
+          sudo apt-add-repository 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main'
+          sudo apt update
+          sudo apt install clang-9 libc++-9-dev libc++abi-9-dev
+        if: build_matrix.cxx == 'clang++-9'
+      - name: Install gnu build tools
+        run: |
+          sudo apt install g++-8
+        if: build_matrix.cxx == 'g++-8'
+      - name: Clone repo
+        uses: actions/checkout@v1
+      - name: Compile then test
+        run: |
+          cmake --version
+          export CXX=${{ matrix.cxx }}
           mkdir build
           cd build
           cmake -D CMAKE_CXX_COMPILER="$(which ${{ matrix.cxx }})" ..
