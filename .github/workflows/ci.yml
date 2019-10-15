@@ -37,7 +37,6 @@ jobs:
     steps:
       - name: Install common build tools
         run: |
-          sudo apt remove cmake
           wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
           sudo apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
           sudo add-apt-repository ppa:ubuntu-toolchain-r/test
@@ -57,10 +56,10 @@ jobs:
         uses: actions/checkout@v1
       - name: Compile then test
         run: |
-          cmake --version
+          /usr/bin/cmake --version
           export CXX=${{ matrix.cxx }}
           mkdir build
           cd build
-          cmake -D CMAKE_CXX_COMPILER="$(which ${{ matrix.cxx }})" ..
+          /usr/bin/cmake -D CMAKE_CXX_COMPILER="$(which ${{ matrix.cxx }})" ..
           make
           make test
